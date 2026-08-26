@@ -2,10 +2,11 @@ import "server-only";
 
 import { google, type sheets_v4 } from "googleapis";
 
+import { GoogleSheetsConfigurationError } from "@/lib/errors/google-sheets-error";
 import {
-    GoogleSheetsAuthenticationError,
-    GoogleSheetsConfigurationError,
-} from "@/lib/errors/google-sheets-error";
+    GOOGLE_SHEETS_REQUEST_OPTIONS,
+    runGoogleSheetsOperation,
+} from "@/lib/google/google-sheets-request";
 
 const GOOGLE_SHEETS_READONLY_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
@@ -16,7 +17,7 @@ function getRequiredEnvironmentVariable(name: string): string {
 
     if (!value) {
         throw new GoogleSheetsConfigurationError(
-            `Falta la variable de entornno obligatoria: ${name}.`,
+            `Falta la variable de entorno obligatoria: ${name}.`,
         );
     }
 
@@ -51,10 +52,13 @@ function getServiceAccountCredentials() {
 async function createGoogleSheetsClient(): Promise<sheets_v4.Sheets> {
     const credentials = getServiceAccountCredentials();
 
-    try {
+    return runGoogleSheetsOperation("authenticate", async () => {
         const auth = new google.auth.GoogleAuth({
             credentials,
             scopes: [GOOGLE_SHEETS_READONLY_SCOPE],
+            clientOptions: {
+                transporterOptions: GOOGLE_SHEETS_REQUEST_OPTIONS,
+            },
         });
 
         const authClient = await auth.getClient();
@@ -68,12 +72,7 @@ async function createGoogleSheetsClient(): Promise<sheets_v4.Sheets> {
             version: "v4",
             auth,
         });
-    } catch (error) {
-        throw new GoogleSheetsAuthenticationError(
-            "No fue posible autenticar la cuenta de servicio de Google Sheets.",
-            error,
-        );
-    }
+    });
 }
 
 export function getGoogleSheetsClient(): Promise<sheets_v4.Sheets> {

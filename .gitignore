@@ -12,6 +12,7 @@
 
 # Pruebas
 /coverage/
+/.test-dist/
 
 # Variables de entorno y secretos
 .env

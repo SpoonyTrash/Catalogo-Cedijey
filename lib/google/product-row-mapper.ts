@@ -1,5 +1,5 @@
-import { GoogleSheetRow, RawProductSheetRecord } from "@/types/google-sheets";
-import { GoogleSheetsMappingError } from "../errors/google-sheets-error";
+import { GoogleSheetsMappingError } from "@/lib/errors/google-sheets-error";
+import type { GoogleSheetRow, RawProductSheetRecord } from "@/types/google-sheets";
 
 const REQUIRED_HEADERS = ["SKU", "ARTISTA", "ALBUM", "ESTADO", "PORTADA", "GENERO"] as const;
 
@@ -50,7 +50,7 @@ function getCell(
     const columnIndex = headerIndex.get(header);
 
     if (columnIndex === undefined) {
-        throw new GoogleSheetsMappingError(`No fue posible loclizar la columna "${header}"`);
+        throw new GoogleSheetsMappingError(`No fue posible localizar la columna "${header}".`);
     }
 
     return row[columnIndex] ?? "";

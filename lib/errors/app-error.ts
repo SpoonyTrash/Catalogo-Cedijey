@@ -1,4 +1,4 @@
-import type { AppErrorCode } from "@/lib/errors/error-codes";
+import type { AppErrorCode } from "./error-codes";
 
 export type AppErrorOptions = Readonly<{
     code: AppErrorCode;
