@@ -1,4 +1,5 @@
 import { GoogleSheetsMappingError } from "@/lib/errors/google-sheets-error";
+import { normalizeImageUrl } from "@/lib/images/normalize-image-url";
 import type { GoogleSheetRow, RawProductSheetRecord } from "@/types/google-sheets";
 
 const REQUIRED_HEADERS = ["SKU", "ARTISTA", "ALBUM", "ESTADO", "PORTADA", "GENERO"] as const;
@@ -71,7 +72,7 @@ export function convertProductRowsToObject(
         artist: getCell(row, headerIndex, "ARTISTA"),
         album: getCell(row, headerIndex, "ALBUM"),
         status: getCell(row, headerIndex, "ESTADO"),
-        coverImage: getCell(row, headerIndex, "PORTADA"),
+        coverImage: normalizeImageUrl(getCell(row, headerIndex, "PORTADA")),
         genre: getCell(row, headerIndex, "GENERO"),
     }));
 }
