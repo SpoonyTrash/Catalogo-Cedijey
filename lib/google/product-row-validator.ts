@@ -1,6 +1,6 @@
-import { safeCreateProduct } from "@/lib/products/create-product";
-import type { Product } from "@/types/product";
-import type { RawProductSheetRecord } from "@/types/google-sheets";
+import { safeCreateProduct } from "../products/create-product";
+import type { RawProductSheetRecord } from "../../types/google-sheets";
+import type { Product } from "../../types/product";
 
 export type ProductRowValidationIssue = Readonly<{
     field: string;
