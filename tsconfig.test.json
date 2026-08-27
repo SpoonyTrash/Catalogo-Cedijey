@@ -17,7 +17,8 @@
         "lib/errors/error-codes.ts",
         "lib/errors/google-sheets-error.ts",
         "lib/google/google-sheets-request.ts",
-        "tests/google-sheets-request.test.ts"
+        "schemas/product.schema.ts",
+        "tests/**/*.test.ts"
     ],
     "exclude": ["node_modules"]
 }
