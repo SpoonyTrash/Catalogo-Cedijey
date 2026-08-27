@@ -8,13 +8,12 @@ type ErrorPageProps = Readonly<{
     error: Error & {
         digest?: string;
     };
-    reset: () => void;
+    retry: () => void;
 }>;
 
-export default function ErrorPage({ error, reset }: ErrorPageProps) {
+export default function ErrorPage({ error, retry }: ErrorPageProps) {
     useEffect(() => {
         console.error("[route-error]", {
-            message: error.message,
             digest: error.digest,
         });
     }, [error]);
@@ -22,9 +21,9 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
     return (
         <ErrorState
             title="No pudimos cargar el inventario"
-            message="Ocurrió un problema al consultar los productos. Intenta nuevamente."
+            message="El servicio de inventario no está disponible temporalmente. Intenta nuevamente."
             reference={error.digest}
-            onRetry={reset}
+            onRetry={retry}
         />
     );
 }

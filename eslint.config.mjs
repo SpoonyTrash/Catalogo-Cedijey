@@ -91,11 +91,6 @@ const eslintConfig = defineConfig([
                                 "**/app/**",
                                 "**/components/**",
                                 "**/lib/google/**",
-                                "**/app/**",
-                                "**/components/**",
-                                "**/repositories/**",
-                                "**/services/**",
-                                "**/lib/google/**",
                             ],
                             message:
                                 "Los servicios no pueden depender de páginas, componentes ni clientes de Google.",
@@ -122,7 +117,14 @@ const eslintConfig = defineConfig([
         },
     },
 
-    globalIgnores([".next/**", "out/**", "build/**", "coverage/**", "next-env.d.ts"]),
+    globalIgnores([
+        ".next/**",
+        ".test-dist/**",
+        "out/**",
+        "build/**",
+        "coverage/**",
+        "next-env.d.ts",
+    ]),
 
     eslintConfigPrettier,
 ]);

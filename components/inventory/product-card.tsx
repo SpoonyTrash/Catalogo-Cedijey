@@ -5,8 +5,8 @@ type ProductCardProps = Readonly<{
 }>;
 
 export function ProductCard({ product }: ProductCardProps) {
-    const isSoldOut = product.availability === "sold_out";
-    const availabilityLabel = isSoldOut ? "Agotado" : "Disponible";
+    const status = product.status.trim() || "Estado no disponible";
+    const isSoldOut = status.toLocaleLowerCase("es-MX") === "agotado";
 
     return (
         <article className="rounded-xl border border-slate-200 bg-white p-4" data-sku={product.sku}>
@@ -25,7 +25,7 @@ export function ProductCard({ product }: ProductCardProps) {
                         : "mt-4 inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700"
                 }
             >
-                {availabilityLabel}
+                {status}
             </span>
         </article>
     );

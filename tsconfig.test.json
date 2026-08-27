@@ -1,0 +1,23 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "allowJs": false,
+        "incremental": false,
+        "isolatedModules": false,
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "noEmit": false,
+        "noEmitOnError": true,
+        "outDir": ".test-dist",
+        "rootDir": ".",
+        "target": "ES2022"
+    },
+    "include": [
+        "lib/errors/app-error.ts",
+        "lib/errors/error-codes.ts",
+        "lib/errors/google-sheets-error.ts",
+        "lib/google/google-sheets-request.ts",
+        "tests/google-sheets-request.test.ts"
+    ],
+    "exclude": ["node_modules"]
+}
