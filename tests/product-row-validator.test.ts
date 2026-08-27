@@ -99,3 +99,22 @@ test("acepta una portada nula como producto válido", () => {
     assert.equal(products.length, 1);
     assert.equal(products[0]?.coverImageUrl, null);
 });
+
+test("omite y reporta una fila cuya portada contiene una URL inválida", () => {
+    const reports: InvalidProductRowReport[] = [];
+
+    const products = validateProductRows(
+        [
+            {
+                ...validRecord,
+                coverImage: "ftp://example.com/cover.jpg",
+            },
+        ],
+        (report) => reports.push(report),
+    );
+
+    assert.deepEqual(products, []);
+    assert.equal(reports.length, 1);
+    assert.equal(reports[0]?.rowNumber, 2);
+    assert.ok(reports[0]?.issues.some((issue) => issue.field === "coverImageUrl"));
+});

@@ -8,10 +8,7 @@ test("conserva URLs HTTP y HTTPS públicas", () => {
         normalizeImageUrl("https://res.cloudinary.com/demo/image/upload/sample.jpg"),
         "https://res.cloudinary.com/demo/image/upload/sample.jpg",
     );
-    assert.equal(
-        normalizeImageUrl("http://example.com/cover.jpg"),
-        "http://example.com/cover.jpg",
-    );
+    assert.equal(normalizeImageUrl("http://example.com/cover.jpg"), "http://example.com/cover.jpg");
 });
 
 test("elimina espacios al inicio y al final", () => {
@@ -42,17 +39,20 @@ test("no aplica transformaciones específicas del proveedor", () => {
     );
 });
 
-test("devuelve null para valores vacíos, relativos o no HTTP", () => {
+test("devuelve null para valores vacíos o nulos", () => {
+    for (const value of ["", "   ", null]) {
+        assert.equal(normalizeImageUrl(value), null);
+    }
+});
+
+test("conserva valores inválidos para que la capa de validación pueda reportarlos", () => {
     for (const value of [
-        "",
-        "   ",
         "/covers/album.jpg",
         "ftp://example.com/cover.jpg",
         "javascript:alert(1)",
-        null,
         undefined,
         42,
     ]) {
-        assert.equal(normalizeImageUrl(value), null);
+        assert.equal(normalizeImageUrl(value), value);
     }
 });
