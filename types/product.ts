@@ -1,8 +1,1 @@
-export type Product = Readonly<{
-    sku: string;
-    artist: string;
-    album: string;
-    status: string;
-    genre: string;
-    coverImageUrl: string | null;
-}>;
+export type { Product } from "@/schemas/product.schema";
