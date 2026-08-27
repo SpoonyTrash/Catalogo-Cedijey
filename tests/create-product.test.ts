@@ -44,10 +44,12 @@ test("acepta una portada nula en el objeto Product final", () => {
 });
 
 test("rechaza propiedades que no forman parte del Product oficial", () => {
-    const result = safeCreateProduct({
+    const sourceWithExtraField = {
         ...validSource,
         boxes: 3,
-    });
+    };
+
+    const result = safeCreateProduct(sourceWithExtraField);
 
     assert.equal(result.success, false);
 
