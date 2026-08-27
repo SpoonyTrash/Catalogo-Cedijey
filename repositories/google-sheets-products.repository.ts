@@ -7,7 +7,9 @@ import {
     runGoogleSheetsOperation,
 } from "@/lib/google/google-sheets-request";
 import { convertProductRowsToObject } from "@/lib/google/product-row-mapper";
-import type { GoogleSheetRow, RawProductSheetRecord } from "@/types/google-sheets";
+import { validateProductRows } from "@/lib/google/product-row-validator";
+import type { GoogleSheetRow } from "@/types/google-sheets";
+import type { Product } from "@/types/product";
 
 const PRODUCTS_SHEET_RANGE = "CATÁLOGO!A:L";
 
@@ -43,8 +45,9 @@ async function getProductRowsFromGoogleSheets(): Promise<readonly GoogleSheetRow
     });
 }
 
-export async function getProductsFromGoogleSheets(): Promise<readonly RawProductSheetRecord[]> {
+export async function getProductsFromGoogleSheets(): Promise<readonly Product[]> {
     const rows = await getProductRowsFromGoogleSheets();
+    const records = convertProductRowsToObject(rows);
 
-    return convertProductRowsToObject(rows);
+    return validateProductRows(records);
 }
