@@ -1,5 +1,6 @@
-import { productSchema, type Product } from "../../schemas/product.schema";
-import type { RawProductSheetRecord } from "../../types/google-sheets";
+import { safeCreateProduct } from "@/lib/products/create-product";
+import type { Product } from "@/types/product";
+import type { RawProductSheetRecord } from "@/types/google-sheets";
 
 export type ProductRowValidationIssue = Readonly<{
     field: string;
@@ -42,7 +43,7 @@ export function validateProductRows(
     const validProducts: Product[] = [];
 
     records.forEach((record, index) => {
-        const result = productSchema.safeParse({
+        const result = safeCreateProduct({
             sku: record.sku,
             artist: record.artist,
             album: record.album,
