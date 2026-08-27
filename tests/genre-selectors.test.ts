@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { filterProductsByGenre, getAvailableGenres } from "../lib/catalog/genre-selctors";
+import { filterProductsByGenre, getAvailableGenres } from "../lib/catalog/genre-selectors";
 import type { Product } from "../types/product";
 
 const products: readonly Product[] = [
