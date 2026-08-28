@@ -1,13 +1,26 @@
+import { Suspense } from "react";
 import { connection } from "next/server";
 
 import { ProductGrid } from "@/components/inventory/product-grid";
-import { inventoryService } from "@/lib/server/inventory";
+import { getCachedCatalogProducts } from "@/lib/server/inventory";
 
-export default async function HomePage() {
+async function CatalogProducts() {
     await connection();
 
-    const products = await inventoryService.getProducts();
+    const products = await getCachedCatalogProducts();
 
+    return <ProductGrid products={products} />;
+}
+
+function CatalogProductsFallback() {
+    return (
+        <p className="rounded-lg border border-slate-200 bg-white p-6 text-slate-600" role="status">
+            Cargando catálogo…
+        </p>
+    );
+}
+
+export default function HomePage() {
     return (
         <main className="min-h-screen bg-slate-50 px-6 py-12">
             <div className="mx-auto max-w-5xl">
@@ -21,7 +34,9 @@ export default async function HomePage() {
                     </h1>
                 </header>
 
-                <ProductGrid products={products} />
+                <Suspense fallback={<CatalogProductsFallback />}>
+                    <CatalogProducts />
+                </Suspense>
             </div>
         </main>
     );

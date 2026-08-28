@@ -14,3 +14,20 @@ test("la composición de producción utiliza Google Sheets y no el repository en
     assert.match(compositionSource, /new InventoryService\(productRepository\)/);
     assert.doesNotMatch(compositionSource, /InMemoryProductRepository/);
 });
+
+test("expone únicamente el catálogo cacheado y conserva los errores del inventario", () => {
+    assert.match(compositionSource, /export\s+async\s+function\s+getCachedCatalogProducts\(\)/);
+    assert.match(compositionSource, /["']use cache["'];/);
+    assert.match(compositionSource, /return\s+inventoryService\.getProducts\(\)/);
+    assert.doesNotMatch(compositionSource, /export\s+const\s+inventoryService/);
+    assert.doesNotMatch(compositionSource, /return\s+\[\]/);
+});
+
+test("define la política de actualización acordada", () => {
+    assert.match(compositionSource, /cacheLife\(\{/);
+    assert.match(compositionSource, /stale:\s*60/);
+    assert.match(compositionSource, /revalidate:\s*5\s*\*\s*60/);
+    assert.match(compositionSource, /expire:\s*60\s*\*\s*60/);
+    assert.doesNotMatch(compositionSource, /unstable_cache/);
+    assert.doesNotMatch(compositionSource, /GOOGLE_|process\.env/);
+});
