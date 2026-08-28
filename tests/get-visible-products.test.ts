@@ -35,6 +35,7 @@ test("combina el filtro de género con la búsqueda", () => {
     const result = getVisibleProducts(products, {
         selectedGenre: "rock",
         searchQuery: "metallica",
+        sortOrder: "relevance",
     });
 
     assert.deepEqual(
@@ -49,6 +50,7 @@ test("aplica únicamente el género cuando la búsqueda está vacía", () => {
     const result = getVisibleProducts(products, {
         selectedGenre: "RÓCK",
         searchQuery: " ",
+        sortOrder: "relevance",
     });
 
     assert.deepEqual(
@@ -62,6 +64,7 @@ test("aplica únicamente la búsqueda cuando el género es null", () => {
     const result = getVisibleProducts(products, {
         selectedGenre: null,
         searchQuery: "metallica",
+        sortOrder: "relevance",
     });
 
     assert.deepEqual(
@@ -75,6 +78,7 @@ test("sin criterios devuelve todo el catálogo y sus contadores", () => {
     const result = getVisibleProducts(products, {
         selectedGenre: null,
         searchQuery: "",
+        sortOrder: "relevance",
     });
 
     assert.deepEqual(result.products, products);
@@ -87,11 +91,27 @@ test("conserva el total original cuando no encuentra coincidencias", () => {
     const result = getVisibleProducts(products, {
         selectedGenre: "Rock",
         searchQuery: "inexistente",
+        sortOrder: "relevance",
     });
 
     assert.deepEqual(result.products, []);
     assert.equal(result.totalProducts, 3);
     assert.equal(result.matchedProducts, 0);
+});
+
+test("aplica el orden alfabético después del filtro y la búsqueda", () => {
+    const result = getVisibleProducts(products, {
+        selectedGenre: null,
+        searchQuery: "metallica",
+        sortOrder: "alphabetical-desc",
+    });
+
+    assert.deepEqual(
+        result.products.map((product) => product.sku),
+        ["POP-METALLICA", "ROCK-METALLICA"],
+    );
+    assert.equal(result.totalProducts, 3);
+    assert.equal(result.matchedProducts, 2);
 });
 
 test("no modifica el catálogo recibido", () => {
@@ -100,6 +120,7 @@ test("no modifica el catálogo recibido", () => {
     getVisibleProducts(products, {
         selectedGenre: "Rock",
         searchQuery: "metallica",
+        sortOrder: "relevance",
     });
 
     assert.deepEqual(products, originalProducts);

@@ -13,13 +13,14 @@ const product = {
     coverImageUrl: null,
 } satisfies Product;
 
-test("define la consulta del catálogo con género y búsqueda", () => {
+test("define la consulta del catálogo con género, búsqueda y orden", () => {
     const query = {
         selectedGenre: "Regional mexicano",
         searchQuery: "Alejandro Fernández",
+        sortOrder: "alphabetical-asc",
     } satisfies CatalogQuery;
 
-    assert.deepEqual(Object.keys(query).sort(), ["searchQuery", "selectedGenre"]);
+    assert.deepEqual(Object.keys(query).sort(), ["searchQuery", "selectedGenre", "sortOrder"]);
 });
 
 test("separa productos relacionados por artista y género", () => {
