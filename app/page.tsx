@@ -1,41 +1,11 @@
+import { connection } from "next/server";
+
 import { ProductGrid } from "@/components/inventory/product-grid";
-import { InMemoryProductRepository } from "@/repositories/in-memory-product-repository";
-import type { ProductRepository } from "@/repositories/product-repository";
-import { InventoryService } from "@/services/inventory-service";
-import type { Product } from "@/types/product";
-
-const previewProducts: readonly Product[] = [
-    {
-        sku: "5SOS-STAR",
-        artist: "5 Seconds Of Summer",
-        album: "Everyone's A Star!",
-        status: "Poco stock",
-        genre: "Pop rock",
-        coverImageUrl: null,
-    },
-    {
-        sku: "ACDC-HELL",
-        artist: "AC DC",
-        album: "Highway To Hell",
-        status: "Poco stock",
-        genre: "Rock",
-        coverImageUrl: null,
-    },
-    {
-        sku: "AF-2M",
-        artist: "Alejandro Fernández",
-        album: "Dos Mundos",
-        status: "Agotado",
-        genre: "Regional mexicano",
-        coverImageUrl: null,
-    },
-];
-
-const productRepository: ProductRepository = new InMemoryProductRepository(previewProducts);
-
-const inventoryService = new InventoryService(productRepository);
+import { inventoryService } from "@/lib/server/inventory";
 
 export default async function HomePage() {
+    await connection();
+
     const products = await inventoryService.getProducts();
 
     return (
