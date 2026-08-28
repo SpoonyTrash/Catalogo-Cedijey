@@ -1,8 +1,11 @@
 import type { Product } from "./product";
 
+export type CatalogSortOrder = "relevance" | "alphabetical-asc" | "alphabetical-desc";
+
 export type CatalogQuery = Readonly<{
     selectedGenre: string | null;
     searchQuery: string;
+    sortOrder: CatalogSortOrder;
 }>;
 
 export type RelatedProducts = Readonly<{
