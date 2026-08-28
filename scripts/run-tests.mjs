@@ -23,10 +23,14 @@ if (compileResult.status !== 0) {
         .sort()
         .map((fileName) => `.test-dist/tests/${fileName}`);
 
-    const testResult = spawnSync(process.execPath, ["--test", ...compiledTests], {
-        cwd: projectRoot,
-        stdio: "inherit",
-    });
+    const testResult = spawnSync(
+        process.execPath,
+        ["--conditions=react-server", "--test", ...compiledTests],
+        {
+            cwd: projectRoot,
+            stdio: "inherit",
+        },
+    );
 
     process.exitCode = testResult.status ?? 1;
 }
