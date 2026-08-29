@@ -31,3 +31,14 @@ test("mantiene una única función cacheada para todo el catálogo", () => {
 
     assert.deepEqual(cacheDirectiveFiles, ["lib/server/inventory.ts"]);
 });
+
+test("mantiene filtros, búsqueda, ordenamiento y relacionados fuera de la caché del servidor", () => {
+    const catalogSelectorSource = findTypeScriptFiles(join(projectRoot, "lib/catalog"))
+        .map((filePath) => readFileSync(filePath, "utf8"))
+        .join("\n");
+
+    assert.doesNotMatch(catalogSelectorSource, /next\/cache/);
+    assert.doesNotMatch(catalogSelectorSource, /server\/inventory/);
+    assert.doesNotMatch(catalogSelectorSource, /GoogleSheets/);
+    assert.doesNotMatch(catalogSelectorSource, /catalog-products/);
+});
