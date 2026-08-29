@@ -31,3 +31,19 @@ test("define la política de actualización acordada", () => {
     assert.doesNotMatch(compositionSource, /unstable_cache/);
     assert.doesNotMatch(compositionSource, /GOOGLE_|process\.env/);
 });
+
+test("etiqueta la única caché global del catálogo", () => {
+    assert.match(
+        compositionSource,
+        /export\s+const\s+CATALOG_PRODUCTS_CACHE_TAG\s*=\s*["']catalog-products["']/,
+    );
+    assert.match(compositionSource, /cacheTag\(CATALOG_PRODUCTS_CACHE_TAG\)/);
+    assert.equal(compositionSource.match(/["']catalog-products["']/g)?.length, 1);
+});
+
+test("la clave global no depende del usuario, filtros ni productos individuales", () => {
+    assert.match(compositionSource, /function\s+getCachedCatalogProducts\(\)/);
+    assert.doesNotMatch(compositionSource, /cookies\(|headers\(|searchParams/);
+    assert.doesNotMatch(compositionSource, /selectedGenre|searchQuery|sortOrder|sku/);
+    assert.equal(compositionSource.match(/inventoryService\.getProducts\(\)/g)?.length, 1);
+});
