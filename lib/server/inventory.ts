@@ -8,14 +8,6 @@ import type { Product } from "../../types/product";
 
 export const CATALOG_PRODUCTS_CACHE_TAG = "catalog-products";
 
-const productRepository = new GoogleSheetsProductRepository();
-const inventoryService = new InventoryService(productRepository, {
-    errorContext: {
-        source: "google-sheets",
-        cacheTag: CATALOG_PRODUCTS_CACHE_TAG,
-    },
-});
-
 /**
  * Returns the single shared catalog snapshot used by pages, metadata and related-product
  * selectors. Google credentials are read below the repository boundary and are not arguments or
@@ -23,6 +15,9 @@ const inventoryService = new InventoryService(productRepository, {
  *
  * With no function arguments, every consumer shares the same cache entry. Next.js coordinates
  * concurrent fills and time-based revalidation for that key.
+ *
+ * Dependencies are intentionally created inside the cached function. Values captured from module
+ * scope become cache-key inputs, and class instances or loader functions are not serializable.
  *
  * Errors are deliberately allowed to propagate. Next.js keeps the last successful entry when a
  * background revalidation fails, retries on a later request and surfaces the controlled error
@@ -37,6 +32,14 @@ export async function getCachedCatalogProducts(): Promise<readonly Product[]> {
         expire: 60 * 60,
     });
     cacheTag(CATALOG_PRODUCTS_CACHE_TAG);
+
+    const productRepository = new GoogleSheetsProductRepository();
+    const inventoryService = new InventoryService(productRepository, {
+        errorContext: {
+            source: "google-sheets",
+            cacheTag: CATALOG_PRODUCTS_CACHE_TAG,
+        },
+    });
 
     return inventoryService.getProducts();
 }
