@@ -4,17 +4,35 @@ import { join } from "node:path";
 import test from "node:test";
 
 const compositionSource = readFileSync(join(process.cwd(), "lib/server/inventory.ts"), "utf8");
+const cachedFunctionStart = compositionSource.indexOf(
+    "export async function getCachedCatalogProducts",
+);
+const moduleScopeSource = compositionSource.slice(0, cachedFunctionStart);
+const cachedFunctionSource = compositionSource.slice(cachedFunctionStart);
 
 test("la composición del inventario está marcada como exclusiva del servidor", () => {
     assert.match(compositionSource, /import\s+["']server-only["']/);
 });
 
 test("la composición de producción utiliza Google Sheets y no el repository en memoria", () => {
-    assert.match(compositionSource, /new GoogleSheetsProductRepository\(\)/);
-    assert.match(compositionSource, /new InventoryService\(productRepository,\s*\{/);
-    assert.match(compositionSource, /source:\s*["']google-sheets["']/);
-    assert.match(compositionSource, /cacheTag:\s*CATALOG_PRODUCTS_CACHE_TAG/);
+    assert.match(cachedFunctionSource, /new GoogleSheetsProductRepository\(\)/);
+    assert.match(cachedFunctionSource, /new InventoryService\(productRepository,\s*\{/);
+    assert.match(cachedFunctionSource, /source:\s*["']google-sheets["']/);
+    assert.match(cachedFunctionSource, /cacheTag:\s*CATALOG_PRODUCTS_CACHE_TAG/);
     assert.doesNotMatch(compositionSource, /InMemoryProductRepository/);
+});
+
+test("no captura dependencias no serializables en la clave de use cache", () => {
+    assert.ok(cachedFunctionStart >= 0);
+    assert.doesNotMatch(
+        moduleScopeSource,
+        /new GoogleSheetsProductRepository|new InventoryService/,
+    );
+    assert.match(cachedFunctionSource, /["']use cache["'];/);
+    assert.match(
+        cachedFunctionSource,
+        /["']use cache["'];[\s\S]*new GoogleSheetsProductRepository\(\)[\s\S]*new InventoryService/,
+    );
 });
 
 test("expone únicamente el catálogo cacheado y conserva los errores del inventario", () => {
