@@ -33,7 +33,11 @@ function formatIssuePath(path: readonly PropertyKey[]): string {
 }
 
 export function reportInvalidProductRow(report: InvalidProductRowReport): void {
-    console.warn("[invalid-product-row]", report);
+    // React replays console calls made inside a `use cache` fill to the browser. On Windows,
+    // repeatedly serializing these development warnings can fail while transferring the RSC
+    // stream's ArrayBuffer. Writing the same structured event directly to stderr keeps it
+    // server-only and avoids including it in the cached component payload.
+    process.stderr.write(`[invalid-product-row] ${JSON.stringify(report)}\n`);
 }
 
 export function validateProductRows(
