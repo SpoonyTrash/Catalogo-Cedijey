@@ -1,26 +1,47 @@
 import "server-only";
 
-import { normalizeError } from "@/lib/errors/normalize-error";
-import { reportError } from "@/lib/errors/report-error";
-import type { ProductRepository } from "@/repositories/product-repository";
-import type { Product } from "@/types/product";
+import { AppError } from "../lib/errors/app-error";
+import { reportError, type ErrorContext } from "../lib/errors/report-error";
+import type { ProductRepository } from "../repositories/product-repository";
+import type { Product } from "../types/product";
+
+type InventoryServiceOptions = Readonly<{
+    errorContext?: ErrorContext;
+}>;
+
+function createInventoryUnavailableError(
+    error: unknown,
+    message: string,
+    userMessage: string,
+): AppError {
+    return new AppError({
+        code: "INVENTORY_UNAVAILABLE",
+        message,
+        userMessage,
+        cause: error,
+    });
+}
 
 export class InventoryService {
-    constructor(private readonly productRepository: ProductRepository) {}
+    constructor(
+        private readonly productRepository: ProductRepository,
+        private readonly options: InventoryServiceOptions = {},
+    ) {}
 
     async getProducts(): Promise<readonly Product[]> {
         try {
             return await this.productRepository.getAll();
         } catch (error) {
-            const appError = normalizeError(error, {
-                code: "INVENTORY_UNAVAILABLE",
-                message: "InventoryService.getProducts failed",
-                userMessage: "No fue posible cargar el inventario.",
-            });
+            const appError = createInventoryUnavailableError(
+                error,
+                "InventoryService.getProducts failed",
+                "No fue posible cargar el inventario.",
+            );
 
             reportError(appError, {
                 layer: "service",
                 operation: "getProducts",
+                ...this.options.errorContext,
             });
 
             throw appError;
@@ -42,16 +63,17 @@ export class InventoryService {
                 null
             );
         } catch (error) {
-            const appError = normalizeError(error, {
-                code: "INVENTORY_UNAVAILABLE",
-                message: "InventoryService.getProductBySku failed",
-                userMessage: "No fue posible consultar el producto.",
-            });
+            const appError = createInventoryUnavailableError(
+                error,
+                "InventoryService.getProductBySku failed",
+                "No fue posible consultar el producto.",
+            );
 
             reportError(appError, {
                 layer: "service",
                 operation: "getProductBySku",
                 sku: normalizedSku,
+                ...this.options.errorContext,
             });
 
             throw appError;

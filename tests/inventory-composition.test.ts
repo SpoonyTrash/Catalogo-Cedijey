@@ -11,7 +11,9 @@ test("la composición del inventario está marcada como exclusiva del servidor",
 
 test("la composición de producción utiliza Google Sheets y no el repository en memoria", () => {
     assert.match(compositionSource, /new GoogleSheetsProductRepository\(\)/);
-    assert.match(compositionSource, /new InventoryService\(productRepository\)/);
+    assert.match(compositionSource, /new InventoryService\(productRepository,\s*\{/);
+    assert.match(compositionSource, /source:\s*["']google-sheets["']/);
+    assert.match(compositionSource, /cacheTag:\s*CATALOG_PRODUCTS_CACHE_TAG/);
     assert.doesNotMatch(compositionSource, /InMemoryProductRepository/);
 });
 
@@ -21,6 +23,8 @@ test("expone únicamente el catálogo cacheado y conserva los errores del invent
     assert.match(compositionSource, /return\s+inventoryService\.getProducts\(\)/);
     assert.doesNotMatch(compositionSource, /export\s+const\s+inventoryService/);
     assert.doesNotMatch(compositionSource, /return\s+\[\]/);
+    assert.doesNotMatch(compositionSource, /lastProducts|fallbackProducts|cachedProducts\s*=/);
+    assert.doesNotMatch(compositionSource, /catch[\s\S]{0,160}return\s+\[\]/);
 });
 
 test("define la política de actualización acordada", () => {
