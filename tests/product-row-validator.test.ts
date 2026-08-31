@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
     type InvalidProductRowReport,
+    reportInvalidProductRow,
     validateProductRows,
 } from "../lib/google/product-row-validator";
 import type { RawProductSheetRecord } from "../types/google-sheets";
@@ -15,6 +16,31 @@ const validRecord: RawProductSheetRecord = {
     genre: "Rock",
     coverImage: "https://example.com/covers/acdc-hell.jpg",
 };
+
+test("registra filas inválidas únicamente en stderr del servidor", (context) => {
+    let output = "";
+
+    context.mock.method(process.stderr, "write", (chunk: string | Uint8Array) => {
+        output += String(chunk);
+        return true;
+    });
+
+    reportInvalidProductRow({
+        rowNumber: 23,
+        sku: "BB-DTMF",
+        issues: [
+            {
+                field: "artist",
+                message: "ARTISTA no debe comenzar ni terminar con espacios.",
+            },
+        ],
+    });
+
+    assert.match(output, /^\[invalid-product-row\] /);
+    assert.match(output, /"rowNumber":23/);
+    assert.match(output, /"sku":"BB-DTMF"/);
+    assert.ok(output.endsWith("\n"));
+});
 
 test("conserva productos válidos aunque existan filas inválidas", () => {
     const reports: InvalidProductRowReport[] = [];
