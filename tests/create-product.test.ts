@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createProduct, safeCreateProduct } from "../lib/products/create-product";
+import {
+    DEFAULT_PRODUCT_COVER_IMAGE_URL,
+    createProduct,
+    safeCreateProduct,
+} from "../lib/products/create-product";
 
 const validSource = {
     sku: "ACDC-HELL",
@@ -34,13 +38,32 @@ test("crea el objeto Product final utilizado por el frontend", () => {
     ]);
 });
 
-test("acepta una portada nula en el objeto Product final", () => {
+test("usa la portada predeterminada cuando no hay portada", () => {
     const product = createProduct({
         ...validSource,
         coverImageUrl: null,
     });
 
-    assert.equal(product.coverImageUrl, null);
+    assert.equal(product.coverImageUrl, DEFAULT_PRODUCT_COVER_IMAGE_URL);
+});
+
+test("conserva la portada existente cuando sí está disponible", () => {
+    const product = createProduct(validSource);
+
+    assert.equal(product.coverImageUrl, validSource.coverImageUrl);
+});
+
+test("safeCreateProduct también aplica la portada predeterminada", () => {
+    const result = safeCreateProduct({
+        ...validSource,
+        coverImageUrl: null,
+    });
+
+    assert.equal(result.success, true);
+
+    if (result.success) {
+        assert.equal(result.data.coverImageUrl, DEFAULT_PRODUCT_COVER_IMAGE_URL);
+    }
 });
 
 test("rechaza propiedades que no forman parte del Product oficial", () => {
