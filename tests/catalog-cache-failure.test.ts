@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import test from "node:test";
+import test, { type TestContext } from "node:test";
 
 import { AppError } from "../lib/errors/app-error";
 import { GoogleSheetsUnavailableError } from "../lib/errors/google-sheets-error";
@@ -34,31 +34,27 @@ function createService(productRepository: ProductRepository): InventoryService {
     });
 }
 
-async function captureConsoleErrors<T>(operation: () => Promise<T>) {
-    const originalConsoleError = console.error;
-    const calls: unknown[][] = [];
+async function captureServerErrors<T>(context: TestContext, operation: () => Promise<T>) {
+    const entries: string[] = [];
 
-    console.error = (...arguments_: unknown[]) => {
-        calls.push(arguments_);
+    context.mock.method(process.stderr, "write", (chunk: string | Uint8Array) => {
+        entries.push(String(chunk));
+        return true;
+    });
+
+    return {
+        result: await operation(),
+        entries,
     };
-
-    try {
-        return {
-            result: await operation(),
-            calls,
-        };
-    } finally {
-        console.error = originalConsoleError;
-    }
 }
 
-test("una primera lectura fallida lanza INVENTORY_UNAVAILABLE y nunca devuelve []", async () => {
+test("una primera lectura fallida lanza INVENTORY_UNAVAILABLE y nunca devuelve []", async (context) => {
     const sourceError = new GoogleSheetsUnavailableError("Google Sheets unavailable", "network");
     const service = createService({
         getAll: () => Promise.reject(sourceError),
     });
 
-    const { result: thrownError, calls } = await captureConsoleErrors(async () => {
+    const { result: thrownError, entries } = await captureServerErrors(context, async () => {
         try {
             await service.getProducts();
             assert.fail("getProducts debía lanzar un error controlado");
@@ -71,21 +67,21 @@ test("una primera lectura fallida lanza INVENTORY_UNAVAILABLE y nunca devuelve [
     assert.equal(thrownError.code, "INVENTORY_UNAVAILABLE");
     assert.equal(thrownError.userMessage, "No fue posible cargar el inventario.");
     assert.equal(thrownError.cause, sourceError);
-    assert.equal(calls.length, 1);
+    assert.equal(entries.length, 1);
 });
 
-test("una lectura válida devuelve los productos y no registra errores", async () => {
+test("una lectura válida devuelve los productos y no registra errores", async (context) => {
     const service = createService({
         getAll: () => Promise.resolve(products),
     });
 
-    const { result, calls } = await captureConsoleErrors(() => service.getProducts());
+    const { result, entries } = await captureServerErrors(context, () => service.getProducts());
 
     assert.equal(result, products);
-    assert.deepEqual(calls, []);
+    assert.deepEqual(entries, []);
 });
 
-test("el registro de una actualización fallida es estructurado y no expone credenciales", async () => {
+test("el registro de una actualización fallida es estructurado y no expone credenciales", async (context) => {
     const sensitiveValues = [
         "Bearer very-secret-token",
         "service-account@example.com",
@@ -95,22 +91,19 @@ test("el registro de una actualización fallida es estructurado y no expone cred
         getAll: () => Promise.reject(new Error(sensitiveValues.join(" "))),
     });
 
-    const { calls } = await captureConsoleErrors(async () => {
+    const { entries } = await captureServerErrors(context, async () => {
         await assert.rejects(() => service.getProducts(), AppError);
     });
-    const serializedLog = JSON.stringify(calls);
+    const serializedLog = entries.join("");
 
-    assert.equal(calls.length, 1);
+    assert.equal(entries.length, 1);
     assert.match(serializedLog, /INVENTORY_UNAVAILABLE/);
     assert.match(serializedLog, /getProducts/);
     assert.match(serializedLog, /google-sheets/);
     assert.match(serializedLog, /catalog-products/);
 
     for (const sensitiveValue of sensitiveValues) {
-        assert.doesNotMatch(
-            serializedLog,
-            new RegExp(sensitiveValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
-        );
+        assert.equal(serializedLog.includes(sensitiveValue), false);
     }
 });
 
@@ -148,8 +141,11 @@ test("la interfaz oculta el error técnico y permite reintentar de forma accesib
         /message=["']El servicio de inventario no está disponible temporalmente\. Intenta nuevamente\.["']/,
     );
     assert.match(routeErrorSource, /reference=\{error\.digest\}/);
-    assert.match(routeErrorSource, /onRetry=\{retry\}/);
+    assert.match(routeErrorSource, /reset:\s*\(\)\s*=>\s*void/);
+    assert.match(routeErrorSource, /onRetry=\{reset\}/);
     assert.doesNotMatch(routeErrorSource, /error\.message|error\.stack|error\.cause/);
+    assert.doesNotMatch(routeErrorSource, /revalidateTag|router\.refresh|fetch\(/);
+    assert.doesNotMatch(routeErrorSource, /console\.(?:error|warn|log)/);
 
     assert.match(errorStateSource, /role=["']alert["']/);
     assert.match(errorStateSource, /aria-live=["']assertive["']/);
