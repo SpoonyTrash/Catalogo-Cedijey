@@ -103,10 +103,7 @@ test("el registro de una actualización fallida es estructurado y no expone cred
     assert.match(serializedLog, /catalog-products/);
 
     for (const sensitiveValue of sensitiveValues) {
-        assert.doesNotMatch(
-            serializedLog,
-            new RegExp(sensitiveValue.replace(/[.*+?^${}()|[]\\]/g, "\\$&")),
-        );
+        assert.equal(serializedLog.includes(sensitiveValue), false);
     }
 });
 
