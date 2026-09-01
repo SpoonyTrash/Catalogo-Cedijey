@@ -23,12 +23,16 @@ export function reportError(error: AppError, context: ErrorContext): void {
                       type: typeof error.cause,
                   };
 
-    console.error("[application-error]", {
+    const event = {
         code: error.code,
         name: error.name,
         message: error.message,
         context,
         cause,
         stack: error.stack,
-    });
+    };
+
+    // Keep logs produced during a cached fill on the server. Console calls are replayed by React
+    // in development and can make Next.js serialize the event into the RSC stream.
+    process.stderr.write(`[application-error] ${JSON.stringify(event)}\n`);
 }
