@@ -8,6 +8,7 @@ import {
 } from "@/lib/google/google-sheets-request";
 import { convertProductRowsToObject } from "@/lib/google/product-row-mapper";
 import { validateProductRows } from "@/lib/google/product-row-validator";
+import { catalogUpdateObserver } from "@/lib/server/catalog-observability";
 import type { GoogleSheetRow } from "@/types/google-sheets";
 import type { Product } from "@/types/product";
 
@@ -46,8 +47,21 @@ async function getProductRowsFromGoogleSheets(): Promise<readonly GoogleSheetRow
 }
 
 export async function getProductsFromGoogleSheets(): Promise<readonly Product[]> {
-    const rows = await getProductRowsFromGoogleSheets();
-    const records = convertProductRowsToObject(rows);
+    const updateAttempt = catalogUpdateObserver.start();
 
-    return validateProductRows(records);
+    try {
+        const rows = await getProductRowsFromGoogleSheets();
+        const records = convertProductRowsToObject(rows);
+        const products = validateProductRows(records);
+
+        catalogUpdateObserver.succeed(updateAttempt, {
+            validProductCount: products.length,
+            invalidRowCount: records.length - products.length,
+        });
+
+        return products;
+    } catch (error) {
+        catalogUpdateObserver.fail(updateAttempt, error);
+        throw error;
+    }
 }
