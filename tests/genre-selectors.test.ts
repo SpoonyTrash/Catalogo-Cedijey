@@ -40,7 +40,21 @@ const products: readonly Product[] = [
 ];
 
 test("obtiene géneros únicos ignorando mayúsculas y diacríticos", () => {
-    assert.deepEqual(getAvailableGenres(products), ["Pop rock", "Regional mexicano", "Rock"]);
+    assert.deepEqual(getAvailableGenres(products), ["Rock", "Pop rock", "Regional mexicano"]);
+});
+
+test("ordena los géneros de mayor a menor cantidad de productos", () => {
+    const catalog = [
+        ...products,
+        { ...products[1]!, sku: "POP-TWO" },
+        { ...products[1]!, sku: "POP-THREE" },
+    ];
+
+    assert.deepEqual(getAvailableGenres(catalog), ["Pop rock", "Rock", "Regional mexicano"]);
+});
+
+test("desempata alfabéticamente los géneros con la misma cantidad", () => {
+    assert.deepEqual(getAvailableGenres(products.slice(0, 2)), ["Pop rock", "Rock"]);
 });
 
 test("conserva la primera escritura encontrada para cada género", () => {
