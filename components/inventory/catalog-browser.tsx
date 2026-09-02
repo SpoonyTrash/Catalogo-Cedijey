@@ -50,6 +50,7 @@ export function CatalogBrowser({ products }: CatalogBrowserProps) {
     const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [sortOrder, setSortOrder] = useState<CatalogSortOrder>("relevance");
+    const [showAllGenres, setShowAllGenres] = useState(false);
 
     const genres = useMemo(() => getAvailableGenres(products), [products]);
     const genreCounts = useMemo(() => {
@@ -72,7 +73,9 @@ export function CatalogBrowser({ products }: CatalogBrowserProps) {
         [products, searchQuery, selectedGenre, sortOrder],
     );
 
-    const categories: readonly (string | null)[] = [null, ...genres];
+    const visibleGenres = showAllGenres ? genres : genres.slice(0, 6);
+    const categories: readonly (string | null)[] = [null, ...visibleGenres];
+    const hiddenGenreCount = Math.max(0, genres.length - visibleGenres.length);
 
     return (
         <section id="catalogo" className="scroll-mt-4 bg-white">
@@ -149,6 +152,15 @@ export function CatalogBrowser({ products }: CatalogBrowserProps) {
                             </button>
                         );
                     })}
+                    {hiddenGenreCount > 0 ? (
+                        <button
+                            type="button"
+                            onClick={() => setShowAllGenres(true)}
+                            className="shrink-0 rounded-full border border-dashed border-stone-400 bg-white px-5 py-2.5 text-sm font-medium text-stone-700"
+                        >
+                            Ver todas · +{hiddenGenreCount}
+                        </button>
+                    ) : null}
                 </div>
 
                 <div className="mt-8 grid items-start gap-7 lg:grid-cols-[250px_minmax(0,1fr)]">
@@ -183,6 +195,18 @@ export function CatalogBrowser({ products }: CatalogBrowserProps) {
                                         </button>
                                     );
                                 })}
+                                {hiddenGenreCount > 0 ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAllGenres(true)}
+                                        className="mt-2 flex w-full items-center justify-between rounded-xl border border-dashed border-stone-300 px-3 py-3 text-left text-sm font-medium text-stone-700 transition-colors hover:border-stone-500 hover:bg-stone-50"
+                                    >
+                                        Ver todas
+                                        <span className="text-xs text-stone-400">
+                                            +{hiddenGenreCount}
+                                        </span>
+                                    </button>
+                                ) : null}
                             </div>
                         </div>
 
