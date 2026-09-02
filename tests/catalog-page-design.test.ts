@@ -39,9 +39,12 @@ test("cada tarjeta usa únicamente los datos reales en el formato solicitado", (
 
 test("solo los productos agotados muestran estado y reducen su opacidad", () => {
     assert.match(productCardSource, /isSoldOut/);
-    assert.match(productCardSource, /opacity-\[0\.58\]/);
+    assert.match(productCardSource, /isProductSoldOut\(product\.status\)/);
+    assert.match(productCardSource, /opacity-45/);
+    assert.match(productCardSource, /opacity-55/);
     assert.match(productCardSource, /☹/);
-    assert.match(productCardSource, />\s*Agotado\s*</);
+    assert.match(productCardSource, /AGOTADO/);
+    assert.match(productCardSource, /isSoldOut \? "Agotado" : "Ver producto"/);
     assert.doesNotMatch(productCardSource, />\s*Disponible\s*</);
     assert.doesNotMatch(productCardSource, />\s*Poco stock\s*</);
     assert.match(productCardSource, /mt-3\.5/);
