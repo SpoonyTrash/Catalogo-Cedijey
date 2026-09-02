@@ -37,6 +37,23 @@ test("cada tarjeta usa únicamente los datos reales en el formato solicitado", (
     assert.doesNotMatch(productCardSource, /Weekend Drive|K-pop Energy|NOMBRE DEL ALBUM/);
 });
 
+test("solo los productos agotados muestran estado y reducen su opacidad", () => {
+    assert.match(productCardSource, /isSoldOut/);
+    assert.match(productCardSource, /opacity-\[0\.58\]/);
+    assert.match(productCardSource, /☹/);
+    assert.match(productCardSource, />\s*Agotado\s*</);
+    assert.doesNotMatch(productCardSource, />\s*Disponible\s*</);
+    assert.doesNotMatch(productCardSource, />\s*Poco stock\s*</);
+    assert.match(productCardSource, /mt-3\.5/);
+});
+
+test("muestra seis géneros inicialmente y permite revelar los restantes", () => {
+    assert.match(catalogBrowserSource, /genres\.slice\(0, 6\)/);
+    assert.match(catalogBrowserSource, /showAllGenres/);
+    assert.match(catalogBrowserSource, /setShowAllGenres\(true\)/);
+    assert.match(catalogBrowserSource, /Ver todas/);
+});
+
 test("personalización y redes son elementos visuales sin acciones externas", () => {
     assert.match(catalogBrowserSource, /Personalizar/);
     assert.doesNotMatch(catalogBrowserSource, /onPersonalize|personalizar\/|wa\.me/);
