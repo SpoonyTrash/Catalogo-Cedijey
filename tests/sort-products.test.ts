@@ -43,6 +43,34 @@ test("ordena álbumes de Z a A", () => {
     );
 });
 
+test("coloca los agotados al final conservando la relevancia de cada grupo", () => {
+    const catalog = [
+        { ...products[0]!, status: "Agotado" },
+        products[1]!,
+        { ...products[2]!, status: "Sin stock" },
+        products[3]!,
+    ];
+
+    assert.deepEqual(
+        sortProducts(catalog, "relevance").map((product) => product.sku),
+        ["NIGHT", "HITS", "ALBUM-10", "ALBUM-2"],
+    );
+});
+
+test("mantiene los agotados al final al ordenar alfabéticamente", () => {
+    const catalog = [
+        { ...products[1]!, status: "AGOTADO\u200B" },
+        products[0]!,
+        { ...products[3]!, status: "No disponible" },
+        products[2]!,
+    ];
+
+    assert.deepEqual(
+        sortProducts(catalog, "alphabetical-asc").map((product) => product.sku),
+        ["ALBUM-2", "ALBUM-10", "NIGHT", "HITS"],
+    );
+});
+
 test("desempata títulos iguales por artista y SKU", () => {
     const duplicatedTitles = [
         makeProduct("SAME-20", "Zoé", "Mismo álbum"),
