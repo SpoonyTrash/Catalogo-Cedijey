@@ -1,5 +1,6 @@
 import type { CatalogSortOrder } from "../../types/catalog";
 import type { Product } from "../../types/product";
+import { isProductSoldOut } from "../products/is-product-sold-out";
 
 const ALBUM_COLLATOR = new Intl.Collator("es-MX", {
     numeric: true,
@@ -19,16 +20,31 @@ function compareProductsByAlbum(left: Product, right: Product): number {
     );
 }
 
+function moveSoldOutProductsToEnd(products: readonly Product[]): readonly Product[] {
+    const availableProducts: Product[] = [];
+    const soldOutProducts: Product[] = [];
+
+    for (const product of products) {
+        if (isProductSoldOut(product.status)) {
+            soldOutProducts.push(product);
+        } else {
+            availableProducts.push(product);
+        }
+    }
+
+    return [...availableProducts, ...soldOutProducts];
+}
+
 /**
- * Returns a new catalog ordered by album title. Relevance preserves the incoming order, which
- * allows ranked search results to remain ranked when no alphabetical option is selected.
+ * Returns a new catalog in the requested presentation order and always places sold-out products
+ * after available products. Each availability group preserves relevance or alphabetical order.
  */
 export function sortProducts(
     products: readonly Product[],
     sortOrder: CatalogSortOrder,
 ): readonly Product[] {
     if (sortOrder === "relevance") {
-        return [...products];
+        return moveSoldOutProductsToEnd(products);
     }
 
     const direction = sortOrder === "alphabetical-asc" ? 1 : -1;
@@ -43,5 +59,5 @@ export function sortProducts(
             left.originalIndex - right.originalIndex,
     );
 
-    return indexedProducts.map(({ product }) => product);
+    return moveSoldOutProductsToEnd(indexedProducts.map(({ product }) => product));
 }

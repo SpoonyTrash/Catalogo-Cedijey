@@ -6,23 +6,41 @@ const GENRE_COLLATOR = new Intl.Collator("es-MX", {
 });
 
 /**
- * Returns the distinct genres available in the catalog using the first encountered spelling
- * as the display label. The visual "Todos" option is intentionally not added here.
+ * Returns distinct genres ordered by product count from highest to lowest. Ties are resolved
+ * alphabetically and the first encountered spelling remains the display label. The visual
+ * "Todos" option is intentionally not added here.
  */
 export function getAvailableGenres(products: readonly Product[]): readonly string[] {
-    const genresByComparisonKey = new Map<string, string>();
+    const genresByComparisonKey = new Map<
+        string,
+        {
+            label: string;
+            productCount: number;
+        }
+    >();
 
     for (const product of products) {
         const comparisonKey = normalizeCatalogText(product.genre);
 
-        if (comparisonKey.length > 0 && !genresByComparisonKey.has(comparisonKey)) {
-            genresByComparisonKey.set(comparisonKey, product.genre);
+        if (comparisonKey.length === 0) {
+            continue;
         }
+
+        const existingGenre = genresByComparisonKey.get(comparisonKey);
+
+        genresByComparisonKey.set(comparisonKey, {
+            label: existingGenre?.label ?? product.genre,
+            productCount: (existingGenre?.productCount ?? 0) + 1,
+        });
     }
 
-    return [...genresByComparisonKey.values()].sort((left, right) =>
-        GENRE_COLLATOR.compare(left, right),
-    );
+    return [...genresByComparisonKey.values()]
+        .sort(
+            (left, right) =>
+                right.productCount - left.productCount ||
+                GENRE_COLLATOR.compare(left.label, right.label),
+        )
+        .map(({ label }) => label);
 }
 
 /**

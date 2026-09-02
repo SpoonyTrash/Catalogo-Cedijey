@@ -114,6 +114,21 @@ test("aplica el orden alfabético después del filtro y la búsqueda", () => {
     assert.equal(result.matchedProducts, 2);
 });
 
+test("los agotados aparecen después de los disponibles dentro de los resultados", () => {
+    const catalog = [{ ...products[0]!, status: "Agotado" }, products[1]!, products[2]!];
+
+    const result = getVisibleProducts(catalog, {
+        selectedGenre: null,
+        searchQuery: "",
+        sortOrder: "relevance",
+    });
+
+    assert.deepEqual(
+        result.products.map((product) => product.sku),
+        ["POP-METALLICA", "ROCK-OTHER", "ROCK-METALLICA"],
+    );
+});
+
 test("no modifica el catálogo recibido", () => {
     const originalProducts = products.map((product) => ({ ...product }));
 
