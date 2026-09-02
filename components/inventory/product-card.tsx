@@ -8,10 +8,15 @@ type ProductCardProps = Readonly<{
 
 export function ProductCard({ product }: ProductCardProps) {
     const status = product.status.trim() || "Estado no disponible";
+    const isSoldOut = status.toLocaleLowerCase("es-MX") === "agotado";
 
     return (
         <article
-            className="group flex min-h-full flex-col overflow-hidden rounded-[22px] border border-stone-300 bg-white"
+            className={
+                isSoldOut
+                    ? "group flex min-h-full flex-col overflow-hidden rounded-[22px] border border-stone-300 bg-white opacity-[0.58] grayscale-[18%]"
+                    : "group flex min-h-full flex-col overflow-hidden rounded-[22px] border border-stone-300 bg-white"
+            }
             data-sku={product.sku}
         >
             <div className="relative aspect-[4/3] w-full overflow-hidden bg-stone-100">
@@ -29,9 +34,12 @@ export function ProductCard({ product }: ProductCardProps) {
                     </div>
                 )}
 
-                <span className="absolute top-4 left-4 max-w-[calc(100%-2rem)] truncate rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-medium text-stone-700 shadow-sm backdrop-blur-sm">
-                    {status}
-                </span>
+                {isSoldOut ? (
+                    <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-semibold text-stone-800 shadow-sm backdrop-blur-sm">
+                        <span aria-hidden="true">☹</span>
+                        Agotado
+                    </span>
+                ) : null}
             </div>
 
             <div className="flex flex-1 flex-col p-5">
@@ -41,7 +49,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 <p className="mt-1 line-clamp-1 text-xs tracking-wide text-stone-500 uppercase">
                     {product.artist}
                 </p>
-                <p className="mt-7 text-xs tracking-wide text-stone-500 uppercase">
+                <p className="mt-3.5 text-xs tracking-wide text-stone-500 uppercase">
                     {product.genre}
                 </p>
 
