@@ -26,3 +26,11 @@ test("the production home page does not contain demo products or construct depen
     assert.doesNotMatch(homePageSource, /@\/repositories\//);
     assert.doesNotMatch(homePageSource, /5SOS-STAR|ACDC-HELL|AF-2M/);
 });
+
+test("the home page composes the branded hero, interactive catalog and footer", () => {
+    assert.match(homePageSource, /<SiteHeader\s*\/>/);
+    assert.match(homePageSource, /<CatalogBrowser\s+products=\{products\}\s*\/>/);
+    assert.match(homePageSource, /<SiteFooter\s*\/>/);
+    assert.match(homePageSource, /Catálogo de[\s\S]*Llaveros Álbum/);
+    assert.match(homePageSource, /a8552df4-8580-4451-9432-c042c6e41b8c\.png/);
+});

@@ -8,14 +8,15 @@ type ProductGridProps = Readonly<{
 export function ProductGrid({ products }: ProductGridProps) {
     if (products.length === 0) {
         return (
-            <p className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-slate-600">
-                No hay productos para mostrar.
-            </p>
+            <div className="rounded-[22px] border border-dashed border-stone-300 px-6 py-20 text-center text-stone-600">
+                <p className="text-lg font-medium text-[#171614]">No encontramos coincidencias</p>
+                <p className="mt-2 text-sm">Prueba con otro artista, álbum o categoría.</p>
+            </div>
         );
     }
 
     return (
-        <section aria-label="Productos" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <section aria-label="Productos" className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {products.map((product) => (
                 <ProductCard key={product.sku} product={product} />
             ))}
