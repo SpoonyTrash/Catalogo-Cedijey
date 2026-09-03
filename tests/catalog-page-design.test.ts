@@ -16,6 +16,7 @@ const footerSource = readFileSync(join(projectRoot, "components/site/site-footer
 const brandSource = readFileSync(join(projectRoot, "components/site/brand.tsx"), "utf8");
 const headerSource = readFileSync(join(projectRoot, "components/site/site-header.tsx"), "utf8");
 const layoutSource = readFileSync(join(projectRoot, "app/layout.tsx"), "utf8");
+const logoSvgSource = readFileSync(join(projectRoot, "public/cedijey-logo.svg"), "utf8");
 
 test("las categorías y sus conteos se derivan del catálogo real", () => {
     assert.match(catalogBrowserSource, /getAvailableGenres\(products\)/);
@@ -62,11 +63,18 @@ test("muestra seis géneros inicialmente y permite revelar los restantes", () =>
 
 test("la identidad de CEDIJEY aparece en el header, footer y título de la página", () => {
     assert.match(brandSource, /CEDIJEY/);
-    assert.match(brandSource, /\/cedijey-logo\.png/);
+    assert.match(brandSource, /\/cedijey-logo\.svg/);
+    assert.doesNotMatch(brandSource, /cedijey-logo\.png/);
     assert.doesNotMatch(brandSource, /MiniÁlbum|Keychains/);
     assert.match(headerSource, /CEDIJEY, inicio/);
     assert.match(footerSource, /© 2026 CEDIJEY\. Todos los derechos reservados\./);
     assert.match(layoutSource, /title: ["']CEDIJEY \| Cátalogo["']/);
+});
+
+test("el logo es un SVG vectorial sin imágenes raster incrustadas", () => {
+    assert.match(logoSvgSource, /<svg[\s>]/);
+    assert.match(logoSvgSource, /<path[\s>]/);
+    assert.doesNotMatch(logoSvgSource, /<image[\s>]|data:image|base64/i);
 });
 
 test("personalización abre el chat y el footer conserva solo Instagram", () => {
