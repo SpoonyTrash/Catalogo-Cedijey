@@ -62,6 +62,7 @@ test("muestra seis géneros inicialmente y permite revelar los restantes", () =>
 
 test("la identidad de CEDIJEY aparece en el header, footer y título de la página", () => {
     assert.match(brandSource, /CEDIJEY/);
+    assert.match(brandSource, /\/cedijey-logo\.png/);
     assert.doesNotMatch(brandSource, /MiniÁlbum|Keychains/);
     assert.match(headerSource, /CEDIJEY, inicio/);
     assert.match(footerSource, /© 2026 CEDIJEY\. Todos los derechos reservados\./);
