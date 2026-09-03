@@ -220,10 +220,16 @@ export function CatalogBrowser({ products }: CatalogBrowserProps) {
                                 <p className="mt-4 text-sm leading-relaxed text-stone-600">
                                     Podemos convertirlo en un llavero único y personal.
                                 </p>
-                                <span className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold shadow-sm">
+                                <a
+                                    href="https://ig.me/m/cedijey"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold shadow-sm transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2"
+                                    aria-label="Personalizar un álbum por Instagram"
+                                >
                                     <span aria-hidden="true">✦</span>
                                     Personalizar
-                                </span>
+                                </a>
                             </div>
                             <div
                                 className="h-40 bg-cover bg-center"
@@ -246,10 +252,16 @@ export function CatalogBrowser({ products }: CatalogBrowserProps) {
                     <p className="mt-2 text-sm text-stone-600">
                         Podemos convertirlo en un llavero único y personal.
                     </p>
-                    <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold shadow-sm">
+                    <a
+                        href="https://ig.me/m/cedijey"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold shadow-sm transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2"
+                        aria-label="Personalizar un álbum por Instagram"
+                    >
                         <span aria-hidden="true">✦</span>
                         Personalizar
-                    </span>
+                    </a>
                 </div>
             </div>
         </section>

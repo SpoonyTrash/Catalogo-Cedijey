@@ -12,7 +12,7 @@ function SearchIcon() {
 export function SiteHeader() {
     return (
         <header className="relative z-10 mx-auto flex h-24 max-w-[1280px] items-center justify-between px-5 sm:px-8 lg:px-10">
-            <a href="#inicio" aria-label="MiniÁlbum Keychains, inicio">
+            <a href="#inicio" aria-label="CEDIJEY, inicio">
                 <Brand compact />
             </a>
 
