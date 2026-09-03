@@ -85,3 +85,20 @@ test("personalización abre el chat y el footer conserva solo Instagram", () => 
     assert.match(footerSource, /https:\/\/www\.instagram\.com\/cedijey\//);
     assert.doesNotMatch(footerSource, /TikTok|YouTube|SOCIAL_LABELS/);
 });
+
+test("la personalización móvil aparece antes del catálogo y se oculta en escritorio", () => {
+    const mobilePersonalizationIndex = catalogBrowserSource.indexOf(
+        'className="mb-8 rounded-[22px] bg-[#f4f2ef] p-6 lg:hidden"',
+    );
+    const catalogHeaderIndex = catalogBrowserSource.indexOf(
+        'className="flex flex-col gap-7 border-b',
+    );
+
+    assert.notEqual(mobilePersonalizationIndex, -1);
+    assert.notEqual(catalogHeaderIndex, -1);
+    assert.ok(mobilePersonalizationIndex < catalogHeaderIndex);
+    assert.doesNotMatch(
+        catalogBrowserSource,
+        /mt-10 rounded-\[22px\] bg-\[#f4f2ef\] p-6 lg:hidden/,
+    );
+});
