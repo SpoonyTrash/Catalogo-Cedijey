@@ -25,6 +25,17 @@ body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+.brand-wordmark {
+    display: inline-block;
+    color: #000000;
+    font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+    font-weight: 900;
+    line-height: 0.82;
+    letter-spacing: 0.035em;
+    transform: scaleX(0.88);
+    transform-origin: left center;
+}
+
 button,
 input,
 select {

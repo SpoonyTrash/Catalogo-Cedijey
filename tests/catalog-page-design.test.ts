@@ -13,6 +13,9 @@ const productCardSource = readFileSync(
     "utf8",
 );
 const footerSource = readFileSync(join(projectRoot, "components/site/site-footer.tsx"), "utf8");
+const brandSource = readFileSync(join(projectRoot, "components/site/brand.tsx"), "utf8");
+const headerSource = readFileSync(join(projectRoot, "components/site/site-header.tsx"), "utf8");
+const layoutSource = readFileSync(join(projectRoot, "app/layout.tsx"), "utf8");
 
 test("las categorías y sus conteos se derivan del catálogo real", () => {
     assert.match(catalogBrowserSource, /getAvailableGenres\(products\)/);
@@ -57,11 +60,19 @@ test("muestra seis géneros inicialmente y permite revelar los restantes", () =>
     assert.match(catalogBrowserSource, /Ver todas/);
 });
 
-test("personalización y redes son elementos visuales sin acciones externas", () => {
+test("la identidad de CEDIJEY aparece en el header, footer y título de la página", () => {
+    assert.match(brandSource, /CEDIJEY/);
+    assert.doesNotMatch(brandSource, /MiniÁlbum|Keychains/);
+    assert.match(headerSource, /CEDIJEY, inicio/);
+    assert.match(footerSource, /© 2026 CEDIJEY\. Todos los derechos reservados\./);
+    assert.match(layoutSource, /title: ["']CEDIJEY \| Cátalogo["']/);
+});
+
+test("personalización abre el chat y el footer conserva solo Instagram", () => {
     assert.match(catalogBrowserSource, /Personalizar/);
+    assert.match(catalogBrowserSource, /https:\/\/ig\.me\/m\/cedijey/g);
     assert.doesNotMatch(catalogBrowserSource, /onPersonalize|personalizar\/|wa\.me/);
     assert.match(footerSource, /Instagram/);
-    assert.match(footerSource, /TikTok/);
-    assert.match(footerSource, /YouTube/);
-    assert.doesNotMatch(footerSource, /https?:\/\//);
+    assert.match(footerSource, /https:\/\/www\.instagram\.com\/cedijey\//);
+    assert.doesNotMatch(footerSource, /TikTok|YouTube|SOCIAL_LABELS/);
 });

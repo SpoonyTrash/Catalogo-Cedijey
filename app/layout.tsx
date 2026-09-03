@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-    title: "MiniÁlbum Keychains | Catálogo",
-    description: "Catálogo de llaveros álbum para llevar tus recuerdos favoritos contigo.",
+    title: "CEDIJEY | Cátalogo",
+    description: "Catálogo de llaveros álbum de CEDIJEY.",
 };
 
 type RootLayoutProps = Readonly<{
