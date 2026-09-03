@@ -80,6 +80,25 @@ export function CatalogBrowser({ products }: CatalogBrowserProps) {
     return (
         <section id="catalogo" className="scroll-mt-4 bg-white">
             <div className="mx-auto max-w-[1280px] px-5 py-14 sm:px-8 lg:px-10 lg:py-20">
+                <div className="mb-8 rounded-[22px] bg-[#f4f2ef] p-6 lg:hidden">
+                    <h3 className="text-2xl font-medium tracking-[-0.04em]">
+                        ¿Tienes tu álbum favorito?
+                    </h3>
+                    <p className="mt-2 text-sm text-stone-600">
+                        Podemos convertirlo en un llavero único y personal.
+                    </p>
+                    <a
+                        href="https://ig.me/m/cedijey"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold shadow-sm transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2"
+                        aria-label="Personalizar un álbum por Instagram"
+                    >
+                        <span aria-hidden="true">✦</span>
+                        Personalizar
+                    </a>
+                </div>
+
                 <div className="flex flex-col gap-7 border-b border-stone-200 pb-8 lg:flex-row lg:items-end lg:justify-between">
                     <div className="flex items-baseline gap-8">
                         <h2 className="text-3xl font-medium tracking-[-0.04em]">Catálogo</h2>
@@ -243,25 +262,6 @@ export function CatalogBrowser({ products }: CatalogBrowserProps) {
                     </aside>
 
                     <ProductGrid products={result.products} />
-                </div>
-
-                <div className="mt-10 rounded-[22px] bg-[#f4f2ef] p-6 lg:hidden">
-                    <h3 className="text-2xl font-medium tracking-[-0.04em]">
-                        ¿Tienes tu álbum favorito?
-                    </h3>
-                    <p className="mt-2 text-sm text-stone-600">
-                        Podemos convertirlo en un llavero único y personal.
-                    </p>
-                    <a
-                        href="https://ig.me/m/cedijey"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold shadow-sm transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2"
-                        aria-label="Personalizar un álbum por Instagram"
-                    >
-                        <span aria-hidden="true">✦</span>
-                        Personalizar
-                    </a>
                 </div>
             </div>
         </section>
