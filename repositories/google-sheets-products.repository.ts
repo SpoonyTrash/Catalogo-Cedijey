@@ -61,6 +61,9 @@ export async function getProductsFromGoogleSheets(): Promise<readonly Product[]>
 
         return products;
     } catch (error) {
+        if (error instanceof GoogleSheetsConfigurationError) {
+            console.error("[google-config-error]", error.message);
+        }
         catalogUpdateObserver.fail(updateAttempt, error);
         throw error;
     }
