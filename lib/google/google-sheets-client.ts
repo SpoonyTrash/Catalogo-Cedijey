@@ -61,8 +61,30 @@ async function createGoogleSheetsClient(): Promise<sheets_v4.Sheets> {
             },
         });
 
-        const authClient = await auth.getClient();
-        const accessToken = await authClient.getAccessToken();
+        let accessToken;
+
+        try {
+            const authClient = await auth.getClient();
+            accessToken = await authClient.getAccessToken();
+        } catch (error) {
+            const diagnostic = error as {
+                name?: string;
+                code?: string;
+                cause?: {
+                    name?: string;
+                    code?: string;
+                };
+            };
+
+            console.error("[google-auth-diagnostic]", {
+                name: diagnostic.name,
+                code: diagnostic.code,
+                causeName: diagnostic.cause?.name,
+                causeCode: diagnostic.cause?.code,
+            });
+
+            throw error;
+        }
 
         if (!accessToken.token) {
             throw new Error("Google no devolvió un token de acceso.");
