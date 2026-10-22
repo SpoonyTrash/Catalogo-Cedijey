@@ -61,6 +61,12 @@ function getServiceAccountCredentials() {
         );
     }
 
+    console.error("[google-config-check]", {
+        emailFormatValid: clientEmail.endsWith(".iam.gserviceaccount.com"),
+        privateKeyStartValid: privateKey.startsWith("-----BEGIN PRIVATE KEY-----"),
+        privateKeyEndValid: privateKey.trimEnd().endsWith("-----END PRIVATE KEY-----"),
+    });
+
     return {
         client_email: clientEmail,
         private_key: privateKey,
