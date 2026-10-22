@@ -18,8 +18,8 @@ function findTypeScriptFiles(directory: string): string[] {
     });
 }
 
-test("habilita Cache Components en Next.js 16", () => {
-    assert.match(nextConfigSource, /cacheComponents:\s*true/);
+test("mantiene Cache Components deshabilitado para Workers", () => {
+    assert.doesNotMatch(nextConfigSource.replace(/\/\/[^\n]*/g, ""), /cacheComponents:\s*true/);
 });
 
 test("mantiene una única función cacheada para todo el catálogo", () => {
@@ -29,7 +29,8 @@ test("mantiene una única función cacheada para todo el catálogo", () => {
         .filter((filePath) => /["']use cache["']/.test(readFileSync(filePath, "utf8")))
         .map((filePath) => relative(projectRoot, filePath));
 
-    assert.deepEqual(cacheDirectiveFiles, ["lib/server/inventory.ts"]);
+    assert.deepEqual(cacheDirectiveFiles, []);
+    assert.match(readFileSync(join(projectRoot, "lib/server/inventory.ts"), "utf8"), /unstable_cache/);
 });
 
 test("mantiene filtros, búsqueda, ordenamiento y relacionados fuera de la caché del servidor", () => {
