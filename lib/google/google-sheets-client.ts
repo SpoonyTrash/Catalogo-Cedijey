@@ -1,119 +1,74 @@
 import "server-only";
 
-import { google, type sheets_v4 } from "googleapis";
-
 import { GoogleSheetsConfigurationError } from "@/lib/errors/google-sheets-error";
-import {
-    GOOGLE_SHEETS_REQUEST_OPTIONS,
-    runGoogleSheetsOperation,
-} from "@/lib/google/google-sheets-request";
-
-const GOOGLE_SHEETS_READONLY_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly";
-
-let googleSheetsClientPromise: Promise<sheets_v4.Sheets> | null = null;
-
-function getSafeAuthDiagnostic(error: unknown) {
-    const knownError = error as {
-        name?: string;
-        code?: string;
-        stack?: string;
-    };
-
-    return {
-        name: knownError?.name ?? "Unknown",
-        code: knownError?.code ?? "NO_CODE",
-        stackLocation:
-            knownError?.stack
-                ?.split("\n")
-                .slice(1, 4)
-                .map((line) => line.replace(/\([^)]*\)/g, "(location hidden)")) ?? [],
-    };
-}
+import { GOOGLE_SHEETS_REQUEST_TIMEOUT_MS, runGoogleSheetsOperation } from "@/lib/google/google-sheets-request";
+import { normalizePrivateKey, requestServiceAccountAccessToken } from "@/lib/google/google-service-account-auth";
+import type { GoogleSheetRow } from "@/types/google-sheets";
 
 function getRequiredEnvironmentVariable(name: string): string {
     const value = process.env[name]?.trim();
-
     if (!value) {
         throw new GoogleSheetsConfigurationError(
             `Falta la variable de entorno obligatoria: ${name}.`,
         );
     }
-
     return value;
 }
 
-function getServiceAccountCredentials() {
+function getCredentials() {
     const clientEmail = getRequiredEnvironmentVariable("GOOGLE_SERVICE_ACCOUNT_EMAIL");
-    const privateKey = getRequiredEnvironmentVariable("GOOGLE_PRIVATE_KEY").replace(/\\n/g, "\n");
+    const privateKey = normalizePrivateKey(getRequiredEnvironmentVariable("GOOGLE_PRIVATE_KEY"));
 
     if (!clientEmail.endsWith(".iam.gserviceaccount.com")) {
         throw new GoogleSheetsConfigurationError(
             "GOOGLE_SERVICE_ACCOUNT_EMAIL no contiene un correo válido de cuenta de servicio.",
         );
     }
-
-    if (
-        !privateKey.startsWith("-----BEGIN PRIVATE KEY-----") ||
-        !privateKey.includes("-----END PRIVATE KEY-----")
-    ) {
+    if (!privateKey.startsWith("-----BEGIN PRIVATE KEY-----") ||
+        !privateKey.endsWith("-----END PRIVATE KEY-----")) {
         throw new GoogleSheetsConfigurationError(
             "GOOGLE_PRIVATE_KEY no contiene una clave privada válida.",
         );
     }
-
-    console.error("[google-config-check]", {
-        emailFormatValid: clientEmail.endsWith(".iam.gserviceaccount.com"),
-        privateKeyStartValid: privateKey.startsWith("-----BEGIN PRIVATE KEY-----"),
-        privateKeyEndValid: privateKey.trimEnd().endsWith("-----END PRIVATE KEY-----"),
-    });
-
-    return {
-        client_email: clientEmail,
-        private_key: privateKey,
-    };
+    return { clientEmail, privateKey };
 }
 
-async function createGoogleSheetsClient(): Promise<sheets_v4.Sheets> {
-    const credentials = getServiceAccountCredentials();
+/** Read Google Sheets via native fetch, compatible with Cloudflare Workers. */
+export async function getGoogleSheetValues(
+    spreadsheetId: string,
+    range: string,
+): Promise<readonly GoogleSheetRow[]> {
+    const credentials = getCredentials();
+    const token = await runGoogleSheetsOperation("authenticate", () =>
+        requestServiceAccountAccessToken(credentials, fetch, GOOGLE_SHEETS_REQUEST_TIMEOUT_MS),
+    );
 
-    return runGoogleSheetsOperation("authenticate", async () => {
-        const auth = new google.auth.GoogleAuth({
-            credentials,
-            scopes: [GOOGLE_SHEETS_READONLY_SCOPE],
-            clientOptions: {
-                transporterOptions: GOOGLE_SHEETS_REQUEST_OPTIONS,
-            },
+    return runGoogleSheetsOperation("read", async () => {
+        const url = new URL(
+            `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(range)}`,
+        );
+        url.searchParams.set("majorDimension", "ROWS");
+        url.searchParams.set("valueRenderOption", "FORMATTED_VALUE");
+
+        const response = await fetch(url.toString(), {
+            headers: { Authorization: `Bearer ${token}` },
+            signal: AbortSignal.timeout(GOOGLE_SHEETS_REQUEST_TIMEOUT_MS),
+            cache: "no-store",
         });
-
-        let accessToken;
-
-        try {
-            const authClient = await auth.getClient();
-            accessToken = await authClient.getAccessToken();
-        } catch (error) {
-            console.error("[google-auth-diagnostic]", getSafeAuthDiagnostic(error));
-
-            throw error;
+        if (!response.ok) {
+            throw Object.assign(new Error("No fue posible leer los datos de Google Sheets."), {
+                status: response.status,
+            });
         }
-
-        if (!accessToken.token) {
-            throw new Error("Google no devolvió un token de acceso.");
+        const data: unknown = await response.json();
+        if (typeof data !== "object" || data === null || !("values" in data)) {
+            return [];
         }
-
-        return google.sheets({
-            version: "v4",
-            auth,
-        });
+        if (!Array.isArray(data.values) ||
+            !data.values.every((row: unknown) =>
+                Array.isArray(row) && row.every((value: unknown) => typeof value === "string"))) {
+            throw new Error("Google Sheets devolvió filas con un formato inesperado.");
+        }
+        return data.values as GoogleSheetRow[];
     });
-}
-
-export function getGoogleSheetsClient(): Promise<sheets_v4.Sheets> {
-    if (!googleSheetsClientPromise) {
-        googleSheetsClientPromise = createGoogleSheetsClient().catch((error) => {
-            googleSheetsClientPromise = null;
-            throw error;
-        });
-    }
-
-    return googleSheetsClientPromise;
 }

@@ -1,11 +1,7 @@
 import "server-only";
 
 import { GoogleSheetsConfigurationError } from "@/lib/errors/google-sheets-error";
-import { getGoogleSheetsClient } from "@/lib/google/google-sheets-client";
-import {
-    GOOGLE_SHEETS_REQUEST_OPTIONS,
-    runGoogleSheetsOperation,
-} from "@/lib/google/google-sheets-request";
+import { getGoogleSheetValues } from "@/lib/google/google-sheets-client";
 import { convertProductRowsToObject } from "@/lib/google/product-row-mapper";
 import { validateProductRows } from "@/lib/google/product-row-validator";
 import { catalogUpdateObserver } from "@/lib/server/catalog-observability";
@@ -29,21 +25,7 @@ function getSpreadsheetId(): string {
 async function getProductRowsFromGoogleSheets(): Promise<readonly GoogleSheetRow[]> {
     const spreadsheetId = getSpreadsheetId();
 
-    return runGoogleSheetsOperation("read", async () => {
-        const sheets = await getGoogleSheetsClient();
-
-        const response = await sheets.spreadsheets.values.get(
-            {
-                spreadsheetId,
-                range: PRODUCTS_SHEET_RANGE,
-                majorDimension: "ROWS",
-                valueRenderOption: "FORMATTED_VALUE",
-            },
-            GOOGLE_SHEETS_REQUEST_OPTIONS,
-        );
-
-        return response.data.values ?? [];
-    });
+    return getGoogleSheetValues(spreadsheetId, PRODUCTS_SHEET_RANGE);
 }
 
 export async function getProductsFromGoogleSheets(): Promise<readonly Product[]> {
@@ -61,9 +43,6 @@ export async function getProductsFromGoogleSheets(): Promise<readonly Product[]>
 
         return products;
     } catch (error) {
-        if (error instanceof GoogleSheetsConfigurationError) {
-            console.error("[google-config-error]", error.message);
-        }
         catalogUpdateObserver.fail(updateAttempt, error);
         throw error;
     }
