@@ -1,7 +1,7 @@
 import "server-only";
 
 import { GoogleSheetsConfigurationError } from "@/lib/errors/google-sheets-error";
-import { GOOGLE_SHEETS_REQUEST_TIMEOUT_MS, runGoogleSheetsOperation } from "@/lib/google/google-sheets-request";
+import { GOOGLE_SHEETS_REQUEST_TIMEOUT_MS, getSafeGoogleApiDiagnostic, runGoogleSheetsOperation } from "@/lib/google/google-sheets-request";
 import { normalizePrivateKey, requestServiceAccountAccessToken } from "@/lib/google/google-service-account-auth";
 import type { GoogleSheetRow } from "@/types/google-sheets";
 
@@ -56,6 +56,7 @@ export async function getGoogleSheetValues(
             cache: "no-store",
         });
         if (!response.ok) {
+            console.error("[google-sheets-read-diagnostic]", await getSafeGoogleApiDiagnostic(response));
             throw Object.assign(new Error("No fue posible leer los datos de Google Sheets."), {
                 status: response.status,
             });
