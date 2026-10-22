@@ -12,6 +12,24 @@ const GOOGLE_SHEETS_READONLY_SCOPE = "https://www.googleapis.com/auth/spreadshee
 
 let googleSheetsClientPromise: Promise<sheets_v4.Sheets> | null = null;
 
+function getSafeAuthDiagnostic(error: unknown) {
+    const knownError = error as {
+        name?: string;
+        code?: string;
+        stack?: string;
+    };
+
+    return {
+        name: knownError?.name ?? "Unknown",
+        code: knownError?.code ?? "NO_CODE",
+        stackLocation:
+            knownError?.stack
+                ?.split("\n")
+                .slice(1, 4)
+                .map((line) => line.replace(/\([^)]*\)/g, "(location hidden)")) ?? [],
+    };
+}
+
 function getRequiredEnvironmentVariable(name: string): string {
     const value = process.env[name]?.trim();
 
@@ -67,21 +85,7 @@ async function createGoogleSheetsClient(): Promise<sheets_v4.Sheets> {
             const authClient = await auth.getClient();
             accessToken = await authClient.getAccessToken();
         } catch (error) {
-            const diagnostic = error as {
-                name?: string;
-                code?: string;
-                cause?: {
-                    name?: string;
-                    code?: string;
-                };
-            };
-
-            console.error("[google-auth-diagnostic]", {
-                name: diagnostic.name,
-                code: diagnostic.code,
-                causeName: diagnostic.cause?.name,
-                causeCode: diagnostic.cause?.code,
-            });
+            console.error("[google-auth-diagnostic]", getSafeAuthDiagnostic(error));
 
             throw error;
         }
