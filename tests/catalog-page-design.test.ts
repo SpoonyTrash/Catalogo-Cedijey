@@ -41,6 +41,12 @@ test("cada tarjeta usa únicamente los datos reales en el formato solicitado", (
     assert.doesNotMatch(productCardSource, /Weekend Drive|K-pop Energy|NOMBRE DEL ALBUM/);
 });
 
+test("las portadas de los álbumes se muestran completas y sin zoom que las recorte", () => {
+    assert.match(productCardSource, /className="object-contain"/);
+    assert.doesNotMatch(productCardSource, /object-cover/);
+    assert.doesNotMatch(productCardSource, /group-hover:scale/);
+});
+
 test("solo los productos agotados muestran estado y reducen su opacidad", () => {
     assert.match(productCardSource, /isSoldOut/);
     assert.match(productCardSource, /isProductSoldOut\(product\.status\)/);
