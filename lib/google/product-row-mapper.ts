@@ -1,5 +1,5 @@
-import { GoogleSheetsMappingError } from "@/lib/errors/google-sheets-error";
-import { normalizeImageUrl } from "@/lib/images/normalize-image-url";
+import { GoogleSheetsMappingError } from "../errors/google-sheets-error";
+import { normalizeImageUrl } from "../images/normalize-image-url";
 import type { GoogleSheetRow, RawProductSheetRecord } from "@/types/google-sheets";
 
 const REQUIRED_HEADERS = ["SKU", "ARTISTA", "ALBUM", "ESTADO", "PORTADA", "GENERO"] as const;
@@ -54,7 +54,11 @@ function getCell(
         throw new GoogleSheetsMappingError(`No fue posible localizar la columna "${header}".`);
     }
 
-    return row[columnIndex] ?? "";
+    const value = row[columnIndex] ?? "";
+
+    // Google Sheets may contain invisible leading/trailing spaces. Normalize
+    // textual cells here rather than dropping otherwise valid catalog products.
+    return typeof value === "string" ? value.trim() : value;
 }
 
 export function convertProductRowsToObject(
