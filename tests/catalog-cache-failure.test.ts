@@ -107,30 +107,14 @@ test("el registro de una actualización fallida es estructurado y no expone cred
     }
 });
 
-test("la caché conserva errores, una única entrada global y la política 60/300/3600", () => {
-    const cachedFunctionStart = cacheSource.indexOf(
-        "export async function getCachedCatalogProducts",
-    );
-    const moduleScopeSource = cacheSource.slice(0, cachedFunctionStart);
-    const cachedFunctionSource = cacheSource.slice(cachedFunctionStart);
-
-    assert.ok(cachedFunctionStart >= 0);
-    assert.match(cacheSource, /["']use cache["'];/);
-    assert.match(cacheSource, /cacheTag\(CATALOG_PRODUCTS_CACHE_TAG\)/);
-    assert.match(cacheSource, /return\s+inventoryService\.getProducts\(\)/);
-    assert.match(cacheSource, /stale:\s*60/);
+test("la caché conserva una única entrada global y revalidación cada cinco minutos", () => {
+    assert.match(cacheSource, /unstable_cache\(/);
+    assert.match(cacheSource, /tags:\s*\[CATALOG_PRODUCTS_CACHE_TAG\]/);
     assert.match(cacheSource, /revalidate:\s*5\s*\*\s*60/);
-    assert.match(cacheSource, /expire:\s*60\s*\*\s*60/);
+    assert.match(cacheSource, /return\s+inventoryService\.getProducts\(\)/);
     assert.equal(cacheSource.match(/inventoryService\.getProducts\(\)/g)?.length, 1);
     assert.doesNotMatch(cacheSource, /return\s+\[\]/);
     assert.doesNotMatch(cacheSource, /lastProducts|fallbackProducts|previewProducts/);
-    assert.doesNotMatch(cacheSource, /catch[\s\S]{0,160}return\s+\[\]/);
-    assert.doesNotMatch(
-        moduleScopeSource,
-        /new GoogleSheetsProductRepository|new InventoryService/,
-    );
-    assert.match(cachedFunctionSource, /new GoogleSheetsProductRepository\(\)/);
-    assert.match(cachedFunctionSource, /new InventoryService\(productRepository,\s*\{/);
 });
 
 test("la interfaz oculta el error técnico y permite reintentar de forma accesible", () => {

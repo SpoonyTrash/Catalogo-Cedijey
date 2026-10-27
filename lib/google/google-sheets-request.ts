@@ -141,3 +141,37 @@ export async function runGoogleSheetsOperation<T>(
         throw toGoogleSheetsError(error, operation);
     }
 }
+
+
+/**
+ * Extract only bounded, machine-readable status codes from a Google API error.
+ * Never log the remote error message/body: it may contain sensitive information.
+ */
+export async function getSafeGoogleApiDiagnostic(
+    response: Response,
+): Promise<Readonly<{ httpStatus: number; googleStatus: string | null; reason: string | null }>> {
+    const safeToken = (value: unknown): string | null =>
+        typeof value === "string" && /^[A-Z][A-Z0-9_]{1,63}$/.test(value) ? value : null;
+
+    let googleStatus: string | null = null;
+    let reason: string | null = null;
+
+    try {
+        const body = asRecord(await response.json());
+        const error = asRecord(body?.error);
+        googleStatus = safeToken(error?.status);
+
+        if (Array.isArray(error?.details)) {
+            for (const detail of error.details) {
+                reason = safeToken(asRecord(detail)?.reason);
+                if (reason) {
+                    break;
+                }
+            }
+        }
+    } catch {
+        // Malformed/empty bodies should not mask the original HTTP failure.
+    }
+
+    return { httpStatus: response.status, googleStatus, reason };
+}
