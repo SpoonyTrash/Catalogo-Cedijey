@@ -11,6 +11,13 @@ const nextConfig: NextConfig = {
                 pathname: "/im1hqc5v/image/upload/**",
                 search: "",
             },
+            {
+                protocol: "https",
+                hostname: "res.cloudinary.com",
+                port: "",
+                pathname: "/jywvgglr/image/upload/**",
+                search: "",
+            },
         ],
     },
 };
